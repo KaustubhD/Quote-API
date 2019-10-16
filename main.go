@@ -4,8 +4,13 @@ import(
   "fmt"
   "log"
   "net/http"
+  "io/ioutil"
+  "encoding/json"
 )
 
+type quoteString struct{
+  Quote string `json:"quote"`
+}
 func main(){
 
   http.HandleFunc("/", homePage)
@@ -36,7 +41,34 @@ func handleQuotes(writer http.ResponseWriter, request *http.Request){
 }
 
 func postNewQuote(writer http.ResponseWriter, request *http.Request){
-  _, err := fmt.Fprintf(writer, "Correct request")
+  body, err := ioutil.ReadAll(request.Body)
+  if err != nil{
+    _, err := fmt.Fprintf(writer, "Error read request body")
+    if err != nil{
+      log.Panic(err)
+    }
+    return
+  }
+
+  var quote quoteString
+  err = json.Unmarshal(body, &quote)
+  if err != nil{
+    _, err := fmt.Fprintf(writer, "Error parsing JSON data")
+    if err != nil{
+      log.Panic(err)
+    }
+    return
+  }
+
+  if quote.Quote == ""{
+    _, err := fmt.Fprintf(writer, "At least enter a quote")
+    if err != nil{
+      log.Panic(err)
+    }
+    return
+  }
+
+  _, err = fmt.Fprintf(writer, "Quote received: \"%s\"\n", quote.Quote)
   if err != nil{
     log.Panic(err)
   }
