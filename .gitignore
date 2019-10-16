@@ -1,3 +1,10 @@
+# Fck DS Store
+.DS_Store
+
+# Swaps
+*.swp
+*.swps
+
 # Binaries for programs and plugins
 *.exe
 *.exe~
