@@ -36,3 +36,28 @@ func (quote *QuoteString) StoreInDB() error{
 
   return err
 }
+
+func GetQuoteFromDB() (*QuoteString, error){
+  query := "SELECT quote from quotes order by RANDOM() limit 1"
+  row, err := QueryDB(query)
+
+  if err != nil {
+    return nil, err
+  }
+
+  if !row.Next(){
+    return nil, errors.New("Cannot find a quote")
+  }
+
+  var q string
+  err = row.Scan(&q)
+  if err != nil{
+    return nil, err
+  }
+
+  actualQuote := &QuoteString{
+    Quote: q,
+  }
+
+  return actualQuote, nil
+}

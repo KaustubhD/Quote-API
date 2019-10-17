@@ -27,11 +27,10 @@ func homePage(writer http.ResponseWriter, request *http.Request){
 func handleQuotes(writer http.ResponseWriter, request *http.Request){
   if request.Method == http.MethodPost{
     postNewQuote(writer, request)
+  }else if request.Method == http.MethodGet{
+    getQuote(writer)
   }else{
-    _, err := fmt.Fprintf(writer, "Only POST request available right now !")
-    if err != nil{
-      log.Panic(err)
-    }
+    WriteResponseOrPanic(writer, "Invalid request method. Try using GET or POST")
   }
 }
 
@@ -49,4 +48,15 @@ func postNewQuote(writer http.ResponseWriter, request *http.Request){
   }
 
   WriteResponseOrPanic(writer, fmt.Sprintf("Quote received: \"%s\"\n", quote.Quote))
+}
+
+func getQuote(writer http.ResponseWriter){
+  quoteString, err := GetQuoteFromDB()
+  if err != nil{
+    WriteResponseOrPanic(writer, err.Error())
+    return
+  }
+
+  WriteResponseOrPanic(writer, fmt.Sprintf(`{"quote": %s}`, quoteString.Quote))
+
 }
