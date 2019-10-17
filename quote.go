@@ -54,6 +54,7 @@ func GetQuoteFromDB() (*QuoteString, error){
   if err != nil{
     return nil, err
   }
+  row.Close()
 
   actualQuote := &QuoteString{
     Quote: q,
