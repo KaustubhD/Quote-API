@@ -13,15 +13,25 @@ func WriteResponseOrPanic(writer http.ResponseWriter, message string){
     log.Panic(err)
   }
 }
-func WriteJSON(writer http.ResponseWriter, data interface{}, status int){
+
+func LogOnServerOrPanic(data interface{}){
+  _, err := fmt.Printf("%+v\n", data)
+  if err != nil{
+    log.Panic(err)
+  }
+}
+
+func RespondAndLog(writer http.ResponseWriter, data interface{}, status int){
   writer.Header().Set("Content-Type", "application/json")
   writer.WriteHeader(status)
 
-  actualJSON, err := json.Marshal(data)
+  JSON, err := json.Marshal(data)
 
   if err != nil{
     log.Panic(err)
   }
+  JSONInString := string(JSON)
 
-  WriteResponseOrPanic(writer, string(actualJSON))
+  LogOnServerOrPanic(JSONInString)
+  WriteResponseOrPanic(writer, JSONInString)
 }
