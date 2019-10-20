@@ -6,6 +6,10 @@ import(
   "net/http"
 )
 
+type JSONMessage struct{
+  Message string
+}
+
 func main(){
 
   http.HandleFunc("/", homePage)
@@ -17,10 +21,7 @@ func main(){
 }
 
 func homePage(writer http.ResponseWriter, request *http.Request){
-  _, err := fmt.Fprintf(writer, "Welcome to the Motivational Quote API")
-  if err != nil{
-    log.Panic(err)
-  }
+  WriteJSON(writer, &JSONMessage{"Welcome to the Motivational Quote API"}, 200)
 
 }
 
@@ -30,33 +31,33 @@ func handleQuotes(writer http.ResponseWriter, request *http.Request){
   }else if request.Method == http.MethodGet{
     getQuote(writer)
   }else{
-    WriteResponseOrPanic(writer, "Invalid request method. Try using GET or POST")
+    WriteJSON(writer, &JSONMessage{"Invalid request method."}, 405)
   }
 }
 
 func postNewQuote(writer http.ResponseWriter, request *http.Request){
   quote, err := GetQuoteFromRequest(request)
   if err != nil{
-    WriteResponseOrPanic(writer, fmt.Sprintf("Error: Cannot parse a quote from JSON.\n%s\n", err.Error()))
+    WriteJSON(writer, &JSONMessage{err.Error()}, 422)
     return
   }
 
   err = quote.StoreInDB()
   if err != nil{
-    WriteResponseOrPanic(writer, fmt.Sprintf("Error: Cannot save quote.\n%s\n", err.Error()))
+    WriteJSON(writer, &JSONMessage{"Database Error"}, 503)
     return
   }
 
-  WriteResponseOrPanic(writer, fmt.Sprintf("Quote received: \"%s\"\n", quote.Quote))
+  WriteJSON(writer, &JSONMessage{"Quote received"}, 200)
 }
 
 func getQuote(writer http.ResponseWriter){
   quoteString, err := GetQuoteFromDB()
   if err != nil{
-    WriteResponseOrPanic(writer, err.Error())
+    WriteJSON(writer, &JSONMessage{err.Error()}, 422)
     return
   }
 
-  WriteResponseOrPanic(writer, fmt.Sprintf(`{"quote": %s}`, quoteString.Quote))
+  WriteJSON(writer, quoteString, 200)
 
 }
